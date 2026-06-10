@@ -599,8 +599,7 @@
   <!-- ============ 1 · HERO ============ -->
   <section class="hero" data-screen-label="Hero">
     <div class="hero-media" aria-hidden="true">
-      <img src="assets/bg.png" alt=""></img>
-      <video id="heroVideo" muted playsinline preload="auto" poster="assets/bg.png"></video>
+      <img src="assets/bg.png" alt="Fondo quinceañera Jaquelinne">
       <div class="hero-overlay"></div>
     </div>
 
@@ -765,98 +764,6 @@
       });
     }, { threshold: 0.12 });
     els.forEach(function (el) { io.observe(el); });
-  })();
-
-  // ---------- Hero video ping-pong loop ----------
-  (function () {
-    var video = document.getElementById('heroVideo');
-    if (!video) return;
-
-    // Load via fetch → blob: the static file server doesn't support the
-    // range requests the media stack wants, so we hand it a local blob URL.
-    fetch('assets/hero-video.mp4')
-      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.blob(); })
-      .then(function (blob) {
-        video.src = URL.createObjectURL(blob);
-        video.play().catch(function () {});
-      })
-      .catch(function () { /* poster image stays as fallback */ });
-
-    var reversing = false;
-    var rafId = null;
-
-    function playForward() {
-      reversing = false;
-      try { video.playbackRate = 1; } catch (e) {}
-      video.play().catch(function () {});
-    }
-
-    // Reverse scrub via requestAnimationFrame (negative playbackRate
-    // is not supported in most browsers).
-    function scrubReverse() {
-      reversing = true;
-      var last = performance.now();
-      function step(now) {
-        if (!reversing) return;
-        var dt = (now - last) / 1000;
-        last = now;
-        var t = video.currentTime - dt;
-        if (t <= 0.05) {
-          reversing = false;
-          video.currentTime = 0;
-          playForward();
-          return;
-        }
-        video.currentTime = t;
-        rafId = requestAnimationFrame(step);
-      }
-      rafId = requestAnimationFrame(step);
-    }
-
-    function startReverse() {
-      // Try native negative playbackRate first (some Safari versions).
-      var nativeWorked = false;
-      try {
-        video.playbackRate = -1;
-        if (video.playbackRate === -1) {
-          nativeWorked = true;
-          video.play().catch(function () {});
-          var t0 = video.currentTime;
-          setTimeout(function () {
-            if (video.currentTime >= t0 - 0.01 && !reversing) {
-              // Not actually reversing — fall back to scrub.
-              try { video.playbackRate = 1; } catch (e) {}
-              video.pause();
-              scrubReverse();
-            }
-          }, 300);
-          // When native reverse reaches the start, 'timeupdate' near 0:
-          var onTU = function () {
-            if (video.currentTime <= 0.06 && video.playbackRate === -1) {
-              video.removeEventListener('timeupdate', onTU);
-              playForward();
-            }
-          };
-          video.addEventListener('timeupdate', onTU);
-        }
-      } catch (e) { /* fall through */ }
-
-      if (!nativeWorked) {
-        video.pause();
-        scrubReverse();
-      }
-    }
-
-    video.addEventListener('ended', startReverse);
-
-    // Some browsers block autoplay until interaction; retry on first touch.
-    var kick = function () {
-      if (video.paused && !reversing) { video.play().catch(function () {}); }
-      document.removeEventListener('touchstart', kick);
-      document.removeEventListener('click', kick);
-    };
-    document.addEventListener('touchstart', kick, { once: true });
-    document.addEventListener('click', kick, { once: true });
   })();
 
   // ---------- Countdown ----------
