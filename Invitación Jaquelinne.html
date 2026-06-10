@@ -36,7 +36,6 @@
     margin: 0 auto;
     background: var(--terciopelo);
     box-shadow: 0 0 80px rgba(0,0,0,0.8);
-    overflow-x: hidden;
   }
 
   section { position: relative; }
@@ -148,6 +147,10 @@
     justify-content: center;
     text-align: center;
     overflow: hidden;
+    /* full-bleed: rompe el contenedor de 480px */
+    position: relative;
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
   }
 
   .hero-media {
@@ -155,7 +158,7 @@
     inset: 0;
     pointer-events: none;
   }
-  /* bg.png: fondo completo 16:9 */
+  /* bg.png: paisaje 16:9 cubriendo todo el ancho */
   .hero-media img {
     position: absolute;
     inset: 0;
@@ -165,7 +168,7 @@
     object-position: center;
     filter: brightness(1.25);
   }
-  /* video: retrato 9:16 centrado */
+  /* video: retrato 9:16 centrado encima */
   .hero-media video {
     position: absolute;
     top: 0;
