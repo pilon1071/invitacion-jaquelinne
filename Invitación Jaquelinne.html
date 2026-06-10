@@ -31,14 +31,19 @@
     -webkit-font-smoothing: antialiased;
   }
 
+  html { overflow-x: hidden; }
+
   .page {
-    max-width: 480px;
-    margin: 0 auto;
+    width: 100%;
     background: var(--terciopelo);
-    box-shadow: 0 0 80px rgba(0,0,0,0.8);
   }
 
   section { position: relative; }
+
+  /* Centrar contenido de todas las secciones a 480px */
+  section:not(.hero) {
+    padding-inline: max(28px, calc((100% - 424px) / 2)) !important;
+  }
 
   /* ---------- shared atoms ---------- */
   .label {
@@ -147,10 +152,6 @@
     justify-content: center;
     text-align: center;
     overflow: hidden;
-    /* full-bleed: rompe el contenedor de 480px */
-    position: relative;
-    width: 100vw;
-    margin-left: calc(50% - 50vw);
   }
 
   .hero-media {
