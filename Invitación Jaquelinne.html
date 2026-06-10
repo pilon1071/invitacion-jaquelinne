@@ -152,19 +152,27 @@
 
   .hero-media {
     position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100vw;
-    height: 100%;
+    inset: 0;
     pointer-events: none;
   }
-  .hero-media video,
+  /* bg.png: fondo completo 16:9 */
   .hero-media img {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+  /* video: retrato 9:16 centrado */
+  .hero-media video {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 100%;
+    width: auto;
+    aspect-ratio: 9 / 16;
     object-fit: cover;
   }
   .hero-overlay {
