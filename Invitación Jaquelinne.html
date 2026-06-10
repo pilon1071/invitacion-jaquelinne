@@ -600,6 +600,7 @@
   <section class="hero" data-screen-label="Hero">
     <div class="hero-media" aria-hidden="true">
       <img src="assets/bg.png" alt="Fondo quinceañera Jaquelinne">
+      <video id="heroVideo" muted playsinline preload="auto" poster="assets/bg.png"></video>
       <div class="hero-overlay"></div>
     </div>
 
@@ -764,6 +765,76 @@
       });
     }, { threshold: 0.12 });
     els.forEach(function (el) { io.observe(el); });
+  })();
+
+  // ---------- Hero video ping-pong loop ----------
+  (function () {
+    var video = document.getElementById('heroVideo');
+    if (!video) return;
+
+    fetch('assets/hero-video.mp4')
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.blob(); })
+      .then(function (blob) {
+        video.src = URL.createObjectURL(blob);
+        video.play().catch(function () {});
+      })
+      .catch(function () {});
+
+    var reversing = false;
+
+    function playForward() {
+      reversing = false;
+      try { video.playbackRate = 1; } catch (e) {}
+      video.play().catch(function () {});
+    }
+
+    function scrubReverse() {
+      reversing = true;
+      var last = performance.now();
+      function step(now) {
+        if (!reversing) return;
+        var dt = (now - last) / 1000;
+        last = now;
+        var t = video.currentTime - dt;
+        if (t <= 0.05) { reversing = false; video.currentTime = 0; playForward(); return; }
+        video.currentTime = t;
+        requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    function startReverse() {
+      var nativeWorked = false;
+      try {
+        video.playbackRate = -1;
+        if (video.playbackRate === -1) {
+          nativeWorked = true;
+          video.play().catch(function () {});
+          var t0 = video.currentTime;
+          setTimeout(function () {
+            if (video.currentTime >= t0 - 0.01 && !reversing) {
+              try { video.playbackRate = 1; } catch (e) {}
+              video.pause(); scrubReverse();
+            }
+          }, 300);
+          var onTU = function () {
+            if (video.currentTime <= 0.06 && video.playbackRate === -1) {
+              video.removeEventListener('timeupdate', onTU); playForward();
+            }
+          };
+          video.addEventListener('timeupdate', onTU);
+        }
+      } catch (e) {}
+      if (!nativeWorked) { video.pause(); scrubReverse(); }
+    }
+
+    video.addEventListener('ended', startReverse);
+
+    var kick = function () {
+      if (video.paused && !reversing) { video.play().catch(function () {}); }
+    };
+    document.addEventListener('touchstart', kick, { once: true });
+    document.addEventListener('click', kick, { once: true });
   })();
 
   // ---------- Countdown ----------
