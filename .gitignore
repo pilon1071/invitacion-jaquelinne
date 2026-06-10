@@ -1,3 +1,6 @@
 design_response
 design_response.json
 jaqu-linne/
+
+# Local Netlify folder
+.netlify
