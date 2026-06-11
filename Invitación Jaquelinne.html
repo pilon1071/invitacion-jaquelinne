@@ -608,6 +608,34 @@
     font-size: 16px;
     color: var(--malva);
   }
+
+  /* ---------- Botón de música flotante ---------- */
+  .music-btn {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 999;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 1px solid rgba(201,160,80,0.6);
+    background: rgba(24,8,16,0.85);
+    backdrop-filter: blur(8px);
+    color: var(--dorado);
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  }
+  .music-btn:hover { transform: scale(1.1); box-shadow: 0 6px 26px rgba(201,160,80,0.3); }
+  .music-btn.playing { animation: musicPulse 2s ease-in-out infinite; }
+  @keyframes musicPulse {
+    0%, 100% { box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+    50%       { box-shadow: 0 4px 28px rgba(201,160,80,0.45); }
+  }
 </style>
 </head>
 <body>
@@ -765,6 +793,14 @@
 
 </div>
 
+<!-- YouTube audio oculto -->
+<div style="position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;overflow:hidden;" aria-hidden="true">
+  <div id="yt-player"></div>
+</div>
+
+<!-- Botón flotante música -->
+<button class="music-btn" id="musicBtn" aria-label="Reproducir música">♪</button>
+
 <script>
   // ---------- Reveal on scroll ----------
   (function () {
@@ -884,6 +920,48 @@
 
     tick();
     var intervalId = setInterval(tick, 1000);
+  })();
+
+  // ---------- Música (YouTube IFrame API) ----------
+  (function () {
+    var player, playing = false, ready = false;
+    var btn = document.getElementById('musicBtn');
+
+    window.onYouTubeIframeAPIReady = function () {
+      player = new YT.Player('yt-player', {
+        videoId: 'xAJIMBqlGWo',
+        playerVars: { autoplay: 0, controls: 0, loop: 1, playlist: 'xAJIMBqlGWo', rel: 0, modestbranding: 1 },
+        events: {
+          onReady: function () { ready = true; },
+          onStateChange: function (e) {
+            playing = (e.data === YT.PlayerState.PLAYING);
+            btn.textContent = playing ? '♫' : '♪';
+            playing ? btn.classList.add('playing') : btn.classList.remove('playing');
+          }
+        }
+      });
+    };
+
+    // Cargar API de YouTube
+    var tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(tag);
+
+    // Primer toque del usuario → arrancar música automáticamente
+    function startOnInteraction() {
+      if (ready && !playing) { player.playVideo(); }
+      document.removeEventListener('touchstart', startOnInteraction);
+      document.removeEventListener('click', startOnInteraction);
+    }
+    document.addEventListener('touchstart', startOnInteraction, { once: true });
+    document.addEventListener('click', startOnInteraction, { once: true });
+
+    // Botón toggle
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (!ready) return;
+      playing ? player.pauseVideo() : player.playVideo();
+    });
   })();
 </script>
 </body>
